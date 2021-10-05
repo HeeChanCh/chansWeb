@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitcamp.petcare.matching.mapper.SearchMapper">
+	
+	<!-- 펫시터리스트(+. 평점추가예정★★★★★) -->
+	<select id="getList" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		
+		SELECT
+			 U.USER_NO, 
+		     U.USER_NICKNAME,
+		     U.USER_ADDRESS,
+		     U.USER_LATITUDE,
+		     U.USER_LONGITUDE,
+		     PS.PRO_PHOTO,
+		     (SELECT ROUND(AVG(r.grade), 1) 
+			  FROM tbl_service_matching sm
+			  INNER JOIN tbl_review r ON sm.service_id = r.service_id 
+			  WHERE sm.pet_sitter_no = U.USER_NO) as avg
+        FROM TBL_USER U,
+             TBL_PETSITTER_PROFILE PS
+        WHERE 1=1
+        AND U.USER_NO = PS.USER_NO
+        AND U.USER_STATUS = 'N'
+        AND U.USER_LATITUDE IS NOT NULL		/*좌표필수*/
+        AND U.USER_LONGITUDE IS NOT NULL	/*좌표필수*/
+        <if test='petType != null'>
+        AND EXISTS(
+            SELECT 1 
+            FROM TBL_SERVICE_PETKINDS 
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            AND USE_YN = 'Y'            
+            <choose>
+            	<when test='petType eq "dog"'>
+	            AND PET_TYPE_CODE = #{dogType}
+	            </when>
+	            <otherwise>
+	            AND PET_TYPE_CODE = #{petType}
+	            </otherwise>
+            </choose> 
+        )
+        </if>
+          
+        <if test="(serviceType != null and serviceType.size != 0) or (minPrice != null or maxPrice != null)">        
+        AND EXISTS(
+            SELECT 1 
+            FROM TBL_SERVICE_TYPE 
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            AND USE_YN = 'Y'
+            <if test="serviceType != null and serviceType.size != 0">
+            AND SERVICE_TYPE_CODE IN
+            <foreach collection="serviceType" item="item" index="index" separator="," open="(" close=")"> 
+             #{item} 
+            </foreach>
+            </if>
+            <if test="minPrice != null and maxPrice != null">
+            AND PRICE BETWEEN #{minPrice} 
+            			  AND #{maxPrice}
+            </if>			  
+        )
+        </if>
+        
+        <if test="(startDate != null and !''.toString().equals(startDate)) 
+        	  or (endDate != null and !''.toString().equals(startDate))">                
+        AND EXISTS(
+            SELECT 1 
+            FROM TBL_SERVICE_CALENDAR 
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            <if test= "startDate != null and !''.toString().equals(startDate)"> 
+            AND SERVICE_DATE <![CDATA[ >= ]]> TO_DATE(#{startDate},'YYYY-MM-DD') 
+            </if>
+            <if test= "endDate != null and !''.toString().equals(endDate)"> 
+            AND SERVICE_DATE <![CDATA[ <= ]]> TO_DATE(#{endDate},'YYYY-MM-DD') 
+            </if>
+            
+        )
+        </if>
+        
+        <if test="skillType != null and  skillType.size != 0">        
+        AND  EXISTS(
+            SELECT 1
+            FROM TBL_PETSITTER_SKILL
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            AND USE_YN = 'Y'
+            AND SKILL_TYPE_CODE IN
+            <foreach collection="skillType" item="item" index="index" separator="," open="(" close=")">
+           	#{item}
+            </foreach>
+        )
+        </if>        
+        <if test="addrSidoNm != null and !''.toString().equals(addrSidoNm) 
+        and addrSigugunNm != null and !''.toString().equals(addrSigugunNm)
+        and addrDongNm != null and !''.toString().equals(addrDongNm)">
+        AND REPLACE(U.USER_ADDRESS,' ','') LIKE REPLACE(#{addrSidoNm}||#{addrSigugunNm}||#{addrDongNm},' ','')||'%'
+        </if>
+        
+        OFFSET (#{currPage} -1) * #{amount} ROWS
+        			   FETCH NEXT #{amount} ROWS ONLY
+        			   
+	</select>
+	
+	<select id="getTotal" resultType="int">
+		
+		SELECT COUNT(U.USER_NO)
+        FROM TBL_USER U,
+             TBL_PETSITTER_PROFILE PS
+        WHERE 1=1
+        AND U.USER_NO = PS.USER_NO
+        AND U.USER_STATUS = 'N'
+        AND U.USER_LATITUDE IS NOT NULL		/*좌표필수*/
+        AND U.USER_LONGITUDE IS NOT NULL	/*좌표필수*/
+        <if test='petType != null'>
+        AND EXISTS(
+            SELECT 1 
+            FROM TBL_SERVICE_PETKINDS 
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            AND USE_YN = 'Y'            
+            <choose>
+            	<when test='petType eq "dog"'>
+	            AND PET_TYPE_CODE = #{dogType}
+	            </when>
+	            <otherwise>
+	            AND PET_TYPE_CODE = #{petType}
+	            </otherwise>
+            </choose> 
+        )
+        </if>
+          
+        <if test="(serviceType != null and serviceType.size != 0) or (minPrice != null or maxPrice != null)">        
+        AND EXISTS(
+            SELECT 1 
+            FROM TBL_SERVICE_TYPE 
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            AND USE_YN = 'Y'
+            <if test="serviceType != null and serviceType.size != 0">
+            AND SERVICE_TYPE_CODE IN
+            <foreach collection="serviceType" item="item" index="index" separator="," open="(" close=")"> 
+             #{item} 
+            </foreach>
+            </if>
+            <if test="minPrice != null and maxPrice != null">
+            AND PRICE BETWEEN #{minPrice} 
+            			  AND #{maxPrice}
+            </if>			  
+        )
+        </if>
+        
+        <if test="(startDate != null and !''.toString().equals(startDate)) 
+        	  or (endDate != null and !''.toString().equals(startDate))">                
+        AND EXISTS(
+            SELECT 1 
+            FROM TBL_SERVICE_CALENDAR 
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            <if test= "startDate != null and !''.toString().equals(startDate)"> 
+            AND SERVICE_DATE <![CDATA[ >= ]]> TO_DATE(#{startDate},'YYYY-MM-DD') 
+            </if>
+            <if test= "endDate != null and !''.toString().equals(endDate)"> 
+            AND SERVICE_DATE <![CDATA[ <= ]]> TO_DATE(#{endDate},'YYYY-MM-DD') 
+            </if>
+            
+        )
+        </if>
+        
+        <if test="skillType != null and  skillType.size != 0">        
+        AND  EXISTS(
+            SELECT 1
+            FROM TBL_PETSITTER_SKILL
+            WHERE 1=1
+            AND U.USER_NO = USER_NO
+            AND USE_YN = 'Y'
+            AND SKILL_TYPE_CODE IN
+            <foreach collection="skillType" item="item" index="index" separator="," open="(" close=")">
+           	#{item}
+            </foreach>
+        )
+        </if>        
+        <if test="addrSidoNm != null and !''.toString().equals(addrSidoNm) 
+        and addrSigugunNm != null and !''.toString().equals(addrSigugunNm)
+        and addrDongNm != null and !''.toString().equals(addrDongNm)">
+        AND REPLACE(U.USER_ADDRESS,' ','') LIKE REPLACE(#{addrSidoNm}||#{addrSigugunNm}||#{addrDongNm},' ','')||'%'
+        </if>
+		
+	</select>
+	
+	<!-- ================================================================================ -->
+	
+		
+	<!-- 펫시터프로필 -기본정보(+. 평점추가예정★★★★★) -->
+	<select id="getPs" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_user) */ 
+		     u.user_no,
+		     u.user_nickname,
+		     u.user_address,
+		     u.user_latitude,
+		     u.user_longitude,
+		     u.user_gender,
+		     ps.pro_photo,		     
+		     ps.introduce,
+		     (SELECT ROUND(AVG(r.grade), 1) 
+			  FROM tbl_service_matching sm
+			  INNER JOIN tbl_review r ON sm.service_id = r.service_id 
+			  WHERE sm.pet_sitter_no = U.USER_NO) as avg
+		FROM tbl_user u
+		INNER JOIN  tbl_petsitter_profile ps on u.user_no 
+		                                      = ps.user_no
+		WHERE u.user_no = #{userNo}
+	</select>
+	
+	
+	<!-- 서비스유형 -->
+	<select id="getServiceType" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_petsitter_profile) */ 
+		     ps.user_no,
+		     st.service_type_code,
+		     st.price
+		FROM tbl_petsitter_profile ps
+		INNER JOIN tbl_service_type st on ps.user_no 
+		                                = st.user_no
+		WHERE ps.user_no = #{userNo} AND st.use_yn = 'Y'
+	</select>
+	
+	
+	<!-- 서비스일정 -->
+	<select id="getServiceCalendar" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_petsitter_profile) */ 
+		     ps.user_no,
+		     TO_CHAR(sc.service_date,'yyyy-MM-dd') as service_date
+		FROM tbl_petsitter_profile ps
+		INNER JOIN tbl_service_calendar sc on ps.user_no 
+                                            = sc.user_no
+		WHERE ps.user_no = #{userNo} 
+		AND service_date BETWEEN (sysdate-1) AND (sysDate+90)
+	</select>
+	
+	
+	<!-- 반려동물종류 -->
+	<select id="getServicePetKinds" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_petsitter_profile) */ 
+		     ps.user_no,
+		     sk.pet_type_code
+		FROM tbl_petsitter_profile ps
+		INNER JOIN tbl_service_petkinds sk on ps.user_no 
+                                            = sk.user_no
+		WHERE ps.user_no = #{userNo} AND sk.use_yn = 'Y'
+	</select>
+
+
+	<!-- 펫시터스킬 -->
+	<select id="getPsSkill" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_petsitter_profile) */ 
+		     ps.user_no,
+		     psk.skill_type_code
+		FROM tbl_petsitter_profile ps
+		INNER JOIN tbl_petsitter_skill psk on ps.user_no 
+                                            = psk.user_no
+		WHERE ps.user_no = #{userNo} AND psk.use_yn = 'Y'
+	</select>	
+	
+	
+	<!-- 활동사진 -->
+	<select id="getActivityPhoto" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_petsitter_profile) */ 
+		     ps.user_no,
+		     acp.photo_no,
+             acp.act_photo
+		FROM tbl_petsitter_profile ps
+		INNER JOIN tbl_activity_photo acp on ps.user_no 
+                                           = acp.user_no
+		WHERE ps.user_no = #{userNo}
+		ORDER BY acp.photo_no
+	</select>	
+	
+	
+	<!-- 리뷰 -->
+	<select id="getReview" resultType="com.bitcamp.petcare.matching.domain.PetSitterDTO">
+		SELECT /*+ index_desc(tbl_service_matching) */ 
+		     sm.service_id,
+             ps.pro_photo as petPhoto,
+             revu.user_Nickname as revWriter,
+             rev.grade,
+             rev.rev_content,
+             rev.writer_no,
+             TO_CHAR(rev.writer_date,'yyyy-MM-dd') as revDate,
+             rep.rep_content,
+             rep.writer,
+             TO_CHAR(rep.writer_date,'yyyy-MM-dd') as repDate
+		FROM tbl_service_matching sm
+		INNER JOIN tbl_review rev on sm.service_id = rev.service_id
+        INNER JOIN tbl_user revu on rev.writer_no = revu.user_no
+        INNER JOIN tbl_pet_profile ps on revu.user_no = ps.user_no
+        LEFT OUTER JOIN tbl_reply rep on sm.service_id = rep.service_id
+        WHERE sm.pet_sitter_no = #{userNo}
+	</select>
+	
+	
+</mapper>

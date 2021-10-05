@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitcamp.petcare.mypage.mapper.CustomerInfoManageMapper">
+
+
+<select id="readInfo" resultType="com.bitcamp.petcare.mypage.domain.CustomerInfoManageVO">
+
+	SELECT user_nickname "닉네임",
+		   user_id "아이디",
+		   user_contact "연락처",
+		   user_address "주소",
+		   user_latitude "위도",
+		   user_longitude "경도",
+		   user_gender "성별"
+	FROM tbl_user	
+	WHERE user_no = ${userNo}
+
+</select>
+
+<select id="readPw" resultType="com.bitcamp.petcare.mypage.domain.userPasswordVO">
+	
+	SELECT user_pw
+	FROM tbl_user
+	WHERE user_no = ${userNo}
+
+</select>
+
+<update id="updatePw">
+
+	UPDATE tbl_user
+	SET	user_pw = #{userPw}
+	WHERE user_no = #{userNo}		
+
+</update>
+
+<update id="updateInfo">
+	UPDATE tbl_user
+	SET 
+	     user_nickname = #{userNickname},
+	     user_contact = #{userContact},
+	     user_address = #{userAddress},
+	     user_latitude = #{userLatitude},
+	     user_longitude = #{userLongitude}
+	WHERE user_no = #{userNo}
+</update>
+
+</mapper>

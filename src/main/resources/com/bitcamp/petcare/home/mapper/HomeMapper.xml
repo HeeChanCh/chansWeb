@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitcamp.petcare.home.mapper.HomeMapper">
+
+	<select id="getFaq" resultType="com.bitcamp.petcare.home.domain.FaqVO">
+		SELECT faq_sequence, faq_question, faq_answer
+		FROM tbl_faq
+		ORDER BY 1
+	</select>
+	
+	
+	<select id="getReview" resultType="com.bitcamp.petcare.home.domain.ReviewVO">
+		SELECT r.service_id, r.rev_content, u.user_nickname, p.pro_photo
+		FROM tbl_review r
+		INNER JOIN tbl_user u ON u.user_no = r.writer_no  
+		INNER JOIN tbl_pet_profile p ON p.user_NO = r.writer_no
+		WHERE r.service_id IN(230, 286, 282)
+	</select>
+	
+	
+	
+</mapper>
