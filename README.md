@@ -21,6 +21,8 @@
    + 프레임워크 : Spring, MyBatis
    + 형상관리 : Git, GitHub
  
+[홈페이지 바로가기](http://heechanch.site/)
+
 
 # 프로젝트 진행과정
 + 일정표
@@ -65,3 +67,5 @@
 **패키지구조**
 
 ![패키지명](https://user-images.githubusercontent.com/88583689/135986870-c6e6a9c7-cfed-441a-8644-edbdbd01daeb.png)
+
+[홈페이지 바로가기](http://heechanch.site/)
