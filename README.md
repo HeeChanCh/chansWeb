@@ -23,6 +23,9 @@
  
 [홈페이지 바로가기](http://heechanch.site/)
 
+** 테스트용 아이디
+  + 반려인 : zxc@naver.com / 123123123
+  + 펫시터 : navy@naver.com / 123123123
 
 # 프로젝트 진행과정
 + 일정표
@@ -69,3 +72,7 @@
 ![패키지명](https://user-images.githubusercontent.com/88583689/135986870-c6e6a9c7-cfed-441a-8644-edbdbd01daeb.png)
 
 [홈페이지 바로가기](http://heechanch.site/)
+
+** 테스트용 아이디
+  + 반려인 : zxc@naver.com / 123123123
+  + 펫시터 : navy@naver.com / 123123123
